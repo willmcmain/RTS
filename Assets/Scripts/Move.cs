@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Move : MonoBehaviour {
-	public float speed = 0.1f;
+	public float speed = 3f;
 
 	private IEnumerator moveRoutine;
+	private Rigidbody2D rigidbody;
+	private Vector2 lastMove = Vector2.zero;
+
+	void Awake() {
+		rigidbody = GetComponent<Rigidbody2D>();
+	}
 
 	private IEnumerator MoveRoutine(Vector2 dest) {
-		while (Vector2.Distance (transform.position, dest) > float.Epsilon) {
+		while (Vector2.Distance (transform.position, dest) > 0.05f) {
 			Vector2 path = (dest - (Vector2)transform.position);
-			Vector2 movement = path.normalized * speed;
-			if (movement.magnitude > path.magnitude) {
-				transform.position = dest;
-			} else {
-				transform.position += (Vector3)(path.normalized * speed);
-			}
-			yield return null;
+			Vector2 movement = path.normalized * speed * Time.deltaTime;
+			transform.Translate(movement);
+			lastMove = movement;
+			yield return new WaitForFixedUpdate();
 		}
 	}
 
@@ -26,5 +29,15 @@ public class Move : MonoBehaviour {
 		}
 		moveRoutine = MoveRoutine (dest);
 		StartCoroutine(moveRoutine);
+	}
+
+	void OnCollisionEnter2D(Collision2D coll) {
+		if (coll.transform.tag != "Unit") {
+			if (moveRoutine != null) {
+				StopCoroutine(moveRoutine);
+			}
+			Vector2 dir = lastMove.normalized;
+			transform.Translate(-dir * 0.05f);
+		}
 	}
 }

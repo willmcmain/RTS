@@ -16,6 +16,7 @@ public class SelectBox : MonoBehaviour {
 
 		// Create child gameobject and add box sprite to it
 		selectBox = new GameObject("SelectBox");
+		selectBox.SetActive(false);
 		selectBox.transform.SetParent(this.transform, false);
 		selectBoxRenderer = selectBox.AddComponent<SpriteRenderer>();
 		selectBoxRenderer.sortingOrder = 1;
