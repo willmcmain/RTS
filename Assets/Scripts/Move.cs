@@ -6,12 +6,7 @@ public class Move : MonoBehaviour {
 	public float speed = 3f;
 
 	private IEnumerator moveRoutine;
-	private Rigidbody2D rigidbody;
 	private Vector2 lastMove = Vector2.zero;
-
-	void Awake() {
-		rigidbody = GetComponent<Rigidbody2D>();
-	}
 
 	private IEnumerator MoveRoutine(Vector2 dest) {
 		while (Vector2.Distance (transform.position, dest) > 0.05f) {

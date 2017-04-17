@@ -1,19 +1,55 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UnitController : MonoBehaviour {
-	public List<GameObject> selected;
-	[SerializeField] private Vector2 destination;
-	private Vector2 mouseDown;
+	public GameObject dragBoxPrefab;
+	public Canvas uiCanvas;
+	private List<GameObject> selected = new List<GameObject>();
+	private Vector2 wMouseDown;
+	private bool isMouseDown = false;
+	private bool dragging = false;
 
 	void Awake() {
 		selected = new List<GameObject>();
 	}
 
+	private IEnumerator DragBoxRoutine(Vector2 sSpawnPos) {
+		GameObject dragBox = GameObject.Instantiate(dragBoxPrefab, sSpawnPos, Quaternion.identity, uiCanvas.transform);
+		Debug.Log(sSpawnPos);
+		dragging = true;
+
+		while (Input.GetButton("Select")) {
+			Rect rect = Rect.MinMaxRect(
+				Mathf.Min(sSpawnPos.x, Input.mousePosition.x),
+				Mathf.Min(sSpawnPos.y, Input.mousePosition.y),
+				Mathf.Max(sSpawnPos.x, Input.mousePosition.x),
+				Mathf.Max(sSpawnPos.y, Input.mousePosition.y)
+			);
+			RectTransform rt = dragBox.GetComponent<RectTransform>();
+			rt.position = rect.position;
+			rt.sizeDelta = new Vector2(rect.width, rect.height);
+			yield return null;
+		}
+
+		Destroy(dragBox);
+		dragging = false;
+	}
+
+	private bool IsMouseDrag() {
+		Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		return (wMouseDown - mouse).magnitude > 0.1f;
+	}
+
 	void Update() {
+		if (isMouseDown && IsMouseDrag() && dragging == false) {
+			StartCoroutine(DragBoxRoutine(Camera.main.WorldToScreenPoint(wMouseDown)));
+		}
+
 		if (Input.GetButtonDown("Select")) {
-			mouseDown = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			isMouseDown = true;
+			wMouseDown = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		}
 
 		if (Input.GetButtonUp("Select")) {
@@ -23,10 +59,10 @@ public class UnitController : MonoBehaviour {
 			}
 			selected = new List<GameObject>();
 
-			Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 			// Box selection
-			if ((mouseDown - mouse).magnitude > 0.1f) {
-				Rect box = new Rect(mouseDown.x, mouseDown.y, mouse.x - mouseDown.x, mouse.y - mouseDown.y);
+			Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+			if (IsMouseDrag()) {
+				Rect box = new Rect(wMouseDown.x, wMouseDown.y, mouse.x - wMouseDown.x, mouse.y - wMouseDown.y);
 				foreach (GameObject unit in GameObject.FindGameObjectsWithTag("Unit")) {
 					if (box.Contains(unit.transform.position, true)) {
 						selected.Add(unit);
@@ -42,10 +78,12 @@ public class UnitController : MonoBehaviour {
 					hit.transform.FindChild("SelectBox").gameObject.SetActive(true);
 				}
 			}
+
+			isMouseDown = false;
 		}
 
 		if (Input.GetButtonDown("Order")) {
-			destination = Camera.main.ViewportToWorldPoint(
+			Vector2 destination = Camera.main.ViewportToWorldPoint(
 				Camera.main.ScreenToViewportPoint(Input.mousePosition));
 
 			foreach (GameObject unit in selected) {
