@@ -17,7 +17,6 @@ public class UnitController : MonoBehaviour {
 
 	private IEnumerator DragBoxRoutine(Vector2 sSpawnPos) {
 		GameObject dragBox = GameObject.Instantiate(dragBoxPrefab, sSpawnPos, Quaternion.identity, uiCanvas.transform);
-		Debug.Log(sSpawnPos);
 		dragging = true;
 
 		while (Input.GetButton("Select")) {
@@ -55,7 +54,7 @@ public class UnitController : MonoBehaviour {
 		if (Input.GetButtonUp("Select")) {
 			// Clear old selection
 			foreach (GameObject old in selected) {
-				old.transform.FindChild("SelectBox").gameObject.SetActive(false);
+				old.transform.Find("SelectBox").gameObject.SetActive(false);
 			}
 			selected = new List<GameObject>();
 
@@ -66,7 +65,7 @@ public class UnitController : MonoBehaviour {
 				foreach (GameObject unit in GameObject.FindGameObjectsWithTag("Unit")) {
 					if (box.Contains(unit.transform.position, true)) {
 						selected.Add(unit);
-						unit.transform.FindChild("SelectBox").gameObject.SetActive(true);
+						unit.transform.Find("SelectBox").gameObject.SetActive(true);
 					}
 				}
 			}
@@ -75,7 +74,7 @@ public class UnitController : MonoBehaviour {
 				var hit = Physics2D.Raycast(mouse, Vector2.zero, 0f);
 				if (hit.transform != null && hit.transform.tag == "Unit") {
 					selected.Add(hit.transform.gameObject);
-					hit.transform.FindChild("SelectBox").gameObject.SetActive(true);
+					hit.transform.Find("SelectBox").gameObject.SetActive(true);
 				}
 			}
 
