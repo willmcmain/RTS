@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Move : MonoBehaviour {
+public class Move : MonoBehaviour, IOrder {
 	public float speed = 3f;
 
 	private IEnumerator moveRoutine;
@@ -18,11 +18,11 @@ public class Move : MonoBehaviour {
 		}
 	}
 
-	public void MoveTo(Vector2 dest) {
+	public void Order(Vector2 dest) {
 		if (moveRoutine != null) {
 			StopCoroutine (moveRoutine);
 		}
-		moveRoutine = MoveRoutine (dest);
+		moveRoutine = MoveRoutine(dest);
 		StartCoroutine(moveRoutine);
 	}
 

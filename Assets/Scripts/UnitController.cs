@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class UnitController : MonoBehaviour {
 	public GameObject dragBoxPrefab;
+	public float dragDeadZone = 0.1f;
 	public Canvas uiCanvas;
+	[SerializeField]
 	private List<GameObject> selected = new List<GameObject>();
 	private Vector2 wMouseDown;
 	private bool isMouseDown = false;
@@ -38,7 +40,7 @@ public class UnitController : MonoBehaviour {
 
 	private bool IsMouseDrag() {
 		Vector2 mouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		return (wMouseDown - mouse).magnitude > 0.1f;
+		return (wMouseDown - mouse).magnitude > dragDeadZone;
 	}
 
 	void Update() {
@@ -86,8 +88,19 @@ public class UnitController : MonoBehaviour {
 				Camera.main.ScreenToViewportPoint(Input.mousePosition));
 
 			foreach (GameObject unit in selected) {
-				Move move = unit.GetComponent<Move>();
-				move.MoveTo(destination);
+				IOrder order = unit.GetComponent<IOrder>();
+				if(order != null) {
+					order.Order(destination);
+				}
+			}
+		}
+
+		if (Input.GetKeyDown(KeyCode.B)) {
+			foreach (GameObject unit in selected) {
+				IBuild build = unit.GetComponent<IBuild>();
+				if (build != null) {
+					build.Build(Units.SOLDIER);
+				}
 			}
 		}
 	}
